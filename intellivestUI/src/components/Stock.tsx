@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -10,35 +9,70 @@ import {
   YAxis,
 } from "recharts";
 import "./Stock.css";
+import { restClient } from "@polygon.io/client-js";
 
-interface StockTimestamp {
-  date: string;
-  open: any;
-}
+const convertUnixTimestamp = (unixTimestamp: any) => {
+  const timestamp = new Date(unixTimestamp);
+  return timestamp.toLocaleString();
+};
+
+const CurrentDate = () => {
+  const today = new Date();
+  const todayFormatted = today.toISOString().split("T")[0];
+
+  return todayFormatted;
+};
+
+const TwoYearsAgoDate = () => {
+  const today = new Date();
+
+  const twoYearsAgo = new Date(today);
+  twoYearsAgo.setFullYear(today.getFullYear() - 2);
+  const twoYearsAgoFormatted = twoYearsAgo.toISOString().split("T")[0];
+
+  return twoYearsAgoFormatted;
+};
+
+const StockTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip">
+        <p>{`Time: ${convertUnixTimestamp(label)}`}</p>
+        <p>{`Value: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
 
 export const Stock = () => {
-  const [prices, setPrices] = useState<StockTimestamp[]>([]);
+  const [prices, setPrices] = useState<any>([]);
 
   useEffect(() => {
+    const apiKey = process.env.REACT_APP_API_KEY;
+
+    const rest = restClient(apiKey);
+
     const fetchData = async () => {
       try {
-        // TODO: store in env file..
-        const symbol = "AAPL";
-        const api_key = "lol you wish";
-        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=${symbol}&apikey=${api_key}`;
-        const response = await fetch(url);
-        const data = (await response.json())["Monthly Time Series"];
-
-        const monthlyTimeSeries = [];
-        for (const [key, value] of Object.entries(data)) {
-          monthlyTimeSeries.push({
-            date: key,
-            open: parseFloat(Object(value)["1. open"]),
-          });
-        }
-        setPrices(monthlyTimeSeries.reverse());
+        const data = (
+          await rest.stocks.aggregates(
+            "AAPL",
+            1,
+            "day",
+            TwoYearsAgoDate(),
+            CurrentDate(),
+            {
+              adjusted: "true",
+              sort: "asc",
+            }
+          )
+        ).results;
+        setPrices(data);
       } catch (error) {
-        console.error("Error fetching NASDAQ prices:", error);
+        console.error("Error fetching data:", error);
+        return null;
       }
     };
 
@@ -47,17 +81,21 @@ export const Stock = () => {
 
   return (
     <div className="Stock">
-      <h4>Last 24 Months of NASDAQ Prices</h4>
+      <h4>Last 24 Months of Apple Prices</h4>
       <ResponsiveContainer aspect={3} width={"100%"} height={"100%"}>
         <LineChart
           data={prices}
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid />
-          <XAxis dataKey="date" fontSize={15} />
-          <YAxis fontSize={15} />
-          <Tooltip />
-          <Line type="monotone" dataKey="open" stroke="#8884d8" />
+          <XAxis
+            dataKey="t"
+            fontSize={10}
+            tickFormatter={convertUnixTimestamp}
+          />
+          <YAxis fontSize={10} domain={["auto", "auto"]} />
+          <Tooltip content={<StockTooltip />} />
+          <Line type="monotone" dataKey="o" stroke="#8884d8" dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
