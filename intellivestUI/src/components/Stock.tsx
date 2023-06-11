@@ -37,7 +37,7 @@ export const Stock = () => {
       ) : (
         <div className="Stock">
           <h5 className="Stock-title">Index: NASDAQ</h5>
-          <ResponsiveContainer aspect={2.5} width={"100%"} height={"100%"}>
+          <ResponsiveContainer width={"100%"} height={"100%"}>
             <ComposedChart data={prices}>
               <CartesianGrid strokeWidth={0.15} />
               <XAxis
