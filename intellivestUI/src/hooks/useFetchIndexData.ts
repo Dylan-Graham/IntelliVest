@@ -3,6 +3,35 @@ import { useEffect } from "react";
 import { TwoYearsAgoDate, CurrentDate } from "../utility/utility";
 
 export const useFetchIndexData = ({ indexSymbol, setPrices }: any) => {
+  const dataTransformation = (prices: any) => {
+    let low = prices[0].o;
+    let high = prices[0].o;
+
+    for (const price of prices) {
+      if (price.o < low) {
+        low = price.o;
+      }
+      if (high < price.o) {
+        high = price.o;
+      }
+    }
+
+    const gap = Math.floor((high - low) / 3);
+    const lowBuy = low + gap;
+    const midBuy = gap;
+    const highBuy = 2 * gap;
+
+    for (const price of prices) {
+      price.lowBuy = lowBuy;
+      price.midBuy = midBuy;
+      price.highBuy = highBuy;
+      price.localLow = low;
+      price.localHigh = high;
+    }
+
+    return prices;
+  };
+
   useEffect(() => {
     const apiKey = process.env.REACT_APP_API_KEY;
 
@@ -23,7 +52,7 @@ export const useFetchIndexData = ({ indexSymbol, setPrices }: any) => {
             }
           )
         ).results;
-        setPrices(data);
+        setPrices(dataTransformation(data));
       } catch (error) {
         console.error("Error fetching data:", error);
         return null;
@@ -31,5 +60,5 @@ export const useFetchIndexData = ({ indexSymbol, setPrices }: any) => {
     };
 
     fetchData();
-  }, []);
+  }, [indexSymbol, setPrices]);
 };

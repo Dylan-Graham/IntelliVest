@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./ToggleSwitch.css";
 
 export const ToggleSwitch = ({ state, updateState }: any) => {

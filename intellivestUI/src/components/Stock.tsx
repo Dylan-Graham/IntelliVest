@@ -17,7 +17,7 @@ const StockTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="stock-tooltip">
         <p>{`Time: ${convertUnixTimestamp(label)}`}</p>
-        <p>{`Price: ${payload[0].value}`}</p>
+        <p>{`Price: ${Number.parseInt(payload[3].value).toFixed(0)}`}</p>
       </div>
     );
   }
@@ -31,27 +31,62 @@ export const Stock = () => {
   useFetchIndexData({ indexSymbol: "I:NDX", setPrices });
 
   return (
-    <div className="Stock">
-      <h5 className="Stock-title">Index: NASDAQ</h5>
-      <ResponsiveContainer aspect={3} width={"100%"} height={"100%"}>
-        <ComposedChart data={prices}>
-          <CartesianGrid strokeWidth={0.15} />
-          <XAxis
-            dataKey="t"
-            fontSize={10}
-            tickFormatter={convertUnixTimestamp}
-          />
-          <YAxis fontSize={10} domain={["auto", "auto"]} />
-          <Tooltip content={<StockTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="o"
-            stroke="#84d89c"
-            fill="#84d89c"
-            strokeWidth={1.5}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+    <>
+      {prices.length === 0 ? (
+        <div></div>
+      ) : (
+        <div className="Stock">
+          <h5 className="Stock-title">Index: NASDAQ</h5>
+          <ResponsiveContainer aspect={2.5} width={"100%"} height={"100%"}>
+            <ComposedChart data={prices}>
+              <CartesianGrid strokeWidth={0.15} />
+              <XAxis
+                dataKey="t"
+                fontSize={10}
+                tickFormatter={convertUnixTimestamp}
+              />
+              <YAxis
+                fontSize={10}
+                domain={[11700, 14600]}
+                allowDataOverflow={true}
+              />
+              <Tooltip content={<StockTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="lowBuy"
+                stroke="none"
+                fill="green"
+                strokeWidth={1.5}
+                stackId={1}
+              />
+              <Area
+                type="monotone"
+                dataKey="midBuy"
+                stroke="none"
+                fill="orange"
+                strokeWidth={1.5}
+                stackId={1}
+              />
+              <Area
+                type="monotone"
+                dataKey="highBuy"
+                stroke="none"
+                fill="red"
+                strokeWidth={1.5}
+                stackId={1}
+              />
+              <Area
+                type="monotone"
+                dataKey="o"
+                stroke="#84d89c"
+                fill="#84d89c"
+                strokeWidth={1.5}
+                stackId={2}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </>
   );
 };
