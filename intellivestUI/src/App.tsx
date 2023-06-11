@@ -9,7 +9,7 @@ function App() {
   return (
     <div
       className={
-        darkTheme === true ? "App App-dark-them" : "App App-light-theme"
+        darkTheme === true ? "App App-dark-theme" : "App App-light-theme"
       }
     >
       <div className="header">

@@ -8,7 +8,8 @@
 }
 
 .Stock-title {
-  justify-self: flex-start;
+  align-self: flex-start;
+  padding-left: 60px;
 }
 
 .stock-tooltip {
